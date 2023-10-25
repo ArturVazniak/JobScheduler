@@ -1,12 +1,12 @@
-package com.tangelo.test.service;
+package com.tangelo.task.service;
 
-import com.tangelo.test.model.Job;
+import com.tangelo.task.model.Job;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -16,20 +16,35 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class JobSchedulerImpl implements JobScheduler {
 
-    private final List<Job> scheduledJobs = new ArrayList<>();
-    private final int numberOfAvailableCores = Runtime.getRuntime().availableProcessors();
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(numberOfAvailableCores);
+    private final List<Job> scheduledJobs = new CopyOnWriteArrayList<>();
+    private final ScheduledExecutorService scheduler;
 
-    private final List<Future.State> jobCompleteStates = List.of(
+    private int numberOfThreads = Runtime.getRuntime().availableProcessors();
+
+    private final List<Future.State> jobFinishedStates = List.of(
             Future.State.SUCCESS,
             Future.State.CANCELLED
     );
 
+    public JobSchedulerImpl() {
+        scheduler = Executors.newScheduledThreadPool(numberOfThreads);
+    }
+
+    public JobSchedulerImpl(int threadsNumber) {
+        int threadCount = threadsNumber < 1 ? numberOfThreads : threadsNumber;
+        numberOfThreads = threadsNumber;
+        scheduler = Executors.newScheduledThreadPool(threadCount);
+    }
+
     @Override
-    public Job scheduleJob(Job job) {
-        if (scheduledJobs.size() >= numberOfAvailableCores) {
-            log.error("Can't register more jobs, job limit reached");
-            return job;
+    public synchronized Job scheduleJob(Job job) {
+
+        if (scheduledJobs.size() >= numberOfThreads) {
+            removeFinishedJob();
+            if (scheduledJobs.size() >= numberOfThreads) {
+                log.error("Can't register more jobs, job limit reached");
+                return job;
+            }
         }
 
         ScheduledFuture<?> scheduledJob = switch (job.getSchedulingType()) {
@@ -55,7 +70,7 @@ public class JobSchedulerImpl implements JobScheduler {
 
     public void waitAndShutdown() {
         while (true) {
-            if (scheduledJobs.stream().filter(j -> jobCompleteStates.contains(j.getScheduledJob().state())).count() == scheduledJobs.size()) {
+            if (scheduledJobs.stream().filter(j -> jobFinishedStates.contains(j.getScheduledJob().state())).count() == scheduledJobs.size()) {
                 scheduler.shutdown();
                 break;
             }
@@ -76,4 +91,14 @@ public class JobSchedulerImpl implements JobScheduler {
     public long getScheduledJobsNumber() {
         return scheduledJobs.size();
     }
+
+    private void removeFinishedJob() {
+        List<Job> finishedJob = scheduledJobs.stream().filter(j -> j.getScheduledJob().isDone()).toList();
+
+        if (!finishedJob.isEmpty()) {
+            scheduledJobs.removeAll(finishedJob);
+            finishedJob.forEach(job -> log.info("Deleted finished job {}", job.getId()));
+        }
+    }
+
 }

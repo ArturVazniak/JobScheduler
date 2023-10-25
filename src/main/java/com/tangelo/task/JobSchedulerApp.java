@@ -1,4 +1,4 @@
-package com.tangelo.test;
+package com.tangelo.task;
 
 public class JobSchedulerApp {
 

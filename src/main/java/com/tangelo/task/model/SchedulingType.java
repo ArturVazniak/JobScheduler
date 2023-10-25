@@ -1,11 +1,11 @@
-package com.tangelo.test.model;
+package com.tangelo.task.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.time.Duration;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Getter
 public enum SchedulingType {
     IMMEDIATELY(Duration.ZERO),

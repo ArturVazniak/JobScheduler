@@ -1,6 +1,6 @@
-package com.tangelo.test.service;
+package com.tangelo.task.service;
 
-import com.tangelo.test.model.Job;
+import com.tangelo.task.model.Job;
 
 public interface JobScheduler {
     Job scheduleJob(Job job);
