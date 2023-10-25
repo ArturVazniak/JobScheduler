@@ -19,13 +19,13 @@ public class JobSchedulerTests {
     @Test
     void testJobRegistration() {
         service.scheduleJob(new Job(SchedulingType.FIVE_SECONDS, () -> System.out.println("Something"))); //1
-        Assertions.assertEquals(1, service.getScheduledJobsNumber());
+        Assertions.assertEquals(1, service.getScheduledJobsCount());
 
         service.scheduleJob(new Job(SchedulingType.FIVE_SECONDS, () -> System.out.println("Something"))); //2
         service.scheduleJob(new Job(SchedulingType.FIVE_SECONDS, () -> System.out.println("Something"))); //3
         service.scheduleJob(new Job(SchedulingType.FIVE_SECONDS, () -> System.out.println("Something"))); //4
         service.scheduleJob(new Job(SchedulingType.FIVE_SECONDS, () -> System.out.println("Something"))); //5
-        Assertions.assertEquals(5, service.getScheduledJobsNumber());
+        Assertions.assertEquals(5, service.getScheduledJobsCount());
     }
 
     @Test
@@ -40,7 +40,7 @@ public class JobSchedulerTests {
 
         Thread.sleep(Duration.ofSeconds(5));
         service.scheduleJob(new Job(SchedulingType.IMMEDIATELY, counter::getAndIncrement)); //6
-        Assertions.assertEquals(2, service.getScheduledJobsNumber());
+        Assertions.assertEquals(2, service.getScheduledJobsCount());
 
         Thread.sleep(Duration.ofSeconds(5));
         Assertions.assertEquals(5, counter.get());
@@ -58,7 +58,7 @@ public class JobSchedulerTests {
 
         Thread.sleep(Duration.ofSeconds(5));
         service.scheduleJob(new Job(SchedulingType.IMMEDIATELY, counter::getAndIncrement)); //6
-        Assertions.assertEquals(1, service.getScheduledJobsNumber());
+        Assertions.assertEquals(1, service.getScheduledJobsCount());
 
         Thread.sleep(Duration.ofSeconds(5));
         Assertions.assertEquals(6, counter.get());

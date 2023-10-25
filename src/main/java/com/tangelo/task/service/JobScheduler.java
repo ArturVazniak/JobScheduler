@@ -5,8 +5,7 @@ import com.tangelo.task.model.Job;
 public interface JobScheduler {
     Job scheduleJob(Job job);
     void cancelJob(Job job);
-
     long getNumberOfRunningJobs();
 
-    long getScheduledJobsNumber();
+    long getScheduledJobsCount();
 }
