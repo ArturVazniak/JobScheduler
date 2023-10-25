@@ -1,4 +1,4 @@
-The system is designed to schedule and execute jobs of different types asynchronously
+The system is designed to schedule and execute jobs of different types asynchronously (java 20)
 
 System has the following functionality:
 
